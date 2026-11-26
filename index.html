@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cencia Bear | Cyber Threat Command</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --panel-bg: #09090b;
+            --border-color: #27272a;
+            --text-main: #fafafa;
+            --text-dim: #a1a1aa;
+            --neon-green: #00ff66;
+            --neon-green-glow: rgba(0, 255, 102, 0.15);
+            --neon-red: #ff2a2a;
+            --neon-red-glow: rgba(255, 42, 42, 0.15);
+            --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, var(--neon-green-glow), transparent 25%),
+                radial-gradient(circle at 85% 30%, var(--neon-red-glow), transparent 25%);
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 48px;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            filter: drop-shadow(0 0 8px var(--neon-green));
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--neon-green);
+            background: rgba(0, 255, 102, 0.1);
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 102, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 102, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); }
+        }
+
+        /* Main Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr 400px;
+            gap: 24px;
+            padding: 32px 48px;
+            flex: 1;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Threat Level Panel */
+        .threat-level-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .radar-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px var(--neon-red-glow), inset 0 0 20px var(--neon-red-glow);
+            position: relative;
+        }
+
+        .radar-circle::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--neon-red);
+            animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            opacity: 0;
+        }
+
+        @keyframes radar-ping {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .threat-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--neon-red);
+            text-shadow: 0 0 20px var(--neon-red-glow);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--neon-green);
+        }
+
+        /* Chart Panel */
+        .chart-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            min-height: 300px;
+        }
+
+        /* Terminal Log */
+        .terminal-window {
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            flex: 1;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse; /* Keeps scroll at bottom */
+            gap: 8px;
+        }
+
+        .terminal-window::-webkit-scrollbar {
+            width: 6px;
+        }
+        .terminal-window::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 12px;
+            line-height: 1.5;
+            animation: fade-in 0.3s ease-out;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-time {
+            color: #555;
+        }
+
+        .log-info { color: var(--text-main); }
+        .log-success { color: var(--neon-green); }
+        .log-alert { color: var(--neon-red); font-weight: 600; }
+
+        /* Footer */
+        footer {
+            padding: 24px 48px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .footer-logos {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .flag-icon {
+            width: 32px;
+            height: 20px;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .org-logo {
+            height: 24px;
+            filter: grayscale(100%) brightness(200%);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <span class="logo-icon">🐻</span>
+            <span class="logo-text">Cencia Bear</span>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span>System Active & Protected</span>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <!-- Left Panel: Threat Intel -->
+        <div class="panel">
+            <div class="panel-title">Current Threat Level</div>
+            <div class="threat-level-container">
+                <div class="radar-circle">
+                    <span class="threat-text">HIGH</span>
+                </div>
+            </div>
+            
+            <div class="stat-row">
+                <span class="stat-label">Active Threats Blocked</span>
+                <span class="stat-value" id="blocked-count">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Network Integrity</span>
+                <span class="stat-value" style="color: var(--neon-green);">99.98%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">APTs Detected</span>
+                <span class="stat-value" style="color: var(--neon-red);" id="apt-count">0</span>
+            </div>
+        </div>
+
+        <!-- Center Panel: Live Graph -->
+        <div class="panel">
+            <div class="panel-title">Real-Time Network Traffic (Zero Trust Model)</div>
+            <div class="chart-container">
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Panel: Terminal -->
+        <div class="panel">
+            <div class="panel-title">Live Firewall & Threat Logs</div>
+            <div class="terminal-window" id="terminal">
+                <div class="log-entry">
+                    <span class="log-time">[00:00:00]</span>
+                    <span class="log-info">Initializing Cencia Bear Core...</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[00:00:01]</span>
+                    <span class="log-success">✔ Security protocols loaded (AES-256)</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[00:00:02]</span>
+                    <span class="log-success">✔ Connecting to National KE-CIRT/CC feed...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-text">
+            &copy; 2026 Cencia Bear. Developed by Elvis Mogere.
+        </div>
+        <div class="footer-logos">
+            <!-- Kenya Flag SVG -->
+            <svg class="flag-icon" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+                <rect width="900" height="600" fill="#000"/>
+                <rect width="900" height="200" fill="#BB0000"/>
+                <rect y="400" width="900" height="200" fill="#006600"/>
+                <rect y="200" width="900" height="200" fill="#FFF"/>
+                <path d="M450,200 L450,400 M450,200 C400,250 400,350 450,400 M450,200 C500,250 500,350 450,400" stroke="#000" stroke-width="20" fill="none"/>
+            </svg>
+            <!-- Text logos for CA and UNEP -->
+            <span class="org-logo" style="font-weight: bold; font-family: var(--font-ui); font-size: 14px; letter-spacing: 1px;">CA</span>
+            <span class="org-logo" style="font-weight: bold; font-family: var(--font-ui); font-size: 14px; letter-spacing: 1px;">UNEP</span>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Initialize the Chart.js Line Graph ---
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        
+        // Create gradient for the line
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 255, 102, 0.5)');
+        gradient.addColorStop(1, 'rgba(0, 255, 102, 0)');
+
+        const maxDataPoints = 20;
+        const initialData = Array(maxDataPoints).fill(10);
+
+        const trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(maxDataPoints).fill(''),
+                datasets: [{
+                    label: 'Normal Traffic',
+                    data: initialData,
+                    borderColor: '#00ff66',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Anomalous Traffic',
+                    data: initialData,
+                    borderColor: '#ff2a2a',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    borderDash: [5, 5],
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        grid: { color: '#27272a' },
+                        ticks: { color: '#a1a1aa', font: { family: 'Fira Code', size: 10 } },
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                layout: { padding: 10 }
+            }
+        });
+
+        // --- 2. Update Chart Data ---
+        function updateChart() {
+            const normalData = trafficChart.data.datasets[0].data;
+            const anomalyData = trafficChart.data.datasets[1].data;
+            
+            // Shift data
+            normalData.shift();
+            anomalyData.shift();
+
+            // Generate new random data points
+            const newNormal = Math.floor(Math.random() * 20) + 20; // 20-40 range
+            const newAnomaly = Math.random() > 0.8 ? Math.floor(Math.random() * 50) + 50 : Math.floor(Math.random() * 10); 
+
+            normalData.push(newNormal);
+            anomalyData.push(newAnomaly);
+
+            trafficChart.update();
+        }
+
+        // --- 3. Simulate Terminal Logs ---
+        const terminal = document.getElementById('terminal');
+        const logTypes = [
+            { text: "Accepted connection from 192.168.1.104", type: "info" },
+            { text: "Blocked incoming connection from 45.22.19.1 (Known APT)", type: "alert" },
+            { text: "Firewall rule updated successfully.", type: "success" },
+            { text: "User authentication verified (MFA).", type: "success" },
+            { text: "Detected SQL Injection attempt on API endpoint. Mitigated.", type: "alert" },
+            { text: "DDoS attack signature identified. Traffic rerouted.", type: "alert" },
+            { text: "System integrity scan complete. 0 vulnerabilities.", type: "success" },
+            { text: "Anomalous outbound data transfer blocked.", type: "alert" },
+            { text: "Ransomware payload neutralized.", type: "alert" }
+        ];
+
+        function addLog() {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const log = logTypes[Math.floor(Math.random() * logTypes.length)];
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-${log.type}">${log.text}</span>
+            `;
+            
+            terminal.prepend(entry);
+
+            // Increment counters based on log type
+            if(log.type === 'alert') {
+                let currentBlocked = parseInt(document.getElementById('blocked-count').innerText);
+                document.getElementById('blocked-count').innerText = currentBlocked + 1;
+                
+                if(log.text.includes("APT")) {
+                    let currentApt = parseInt(document.getElementById('apt-count').innerText);
+                    document.getElementById('apt-count').innerText = currentApt + 1;
+                }
+            }
+        }
+
+        // --- 4. Start Simulation ---
+        setInterval(updateChart, 1000);
+        setInterval(addLog, 2500); // New log every 2.5 seconds
+        addLog(); // Initial log
+
+    </script>
+</body>
+</html>
